@@ -1,0 +1,15 @@
+.dart_tool/
+.env
+*.env
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+coverage/
+pubspec.lock
+CODEX_BUILD_PROMPT.md
+example/.dart_tool/
+example/.env
+example/build/
+example/lib/env/env.g.dart
+example/pubspec.lock
