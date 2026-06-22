@@ -1,93 +1,243 @@
 import 'package:flutter/material.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({
-    required this.autoSave,
-    required this.displayNameController,
-    required this.emailController,
-    required this.notesController,
-    required this.premium,
-    required this.weeklySummary,
-    required this.onAutoSaveChanged,
-    required this.onPremiumChanged,
-    required this.onSave,
-    required this.onWeeklySummaryChanged,
-    super.key,
-  });
+import '../state/app_state.dart';
+import '../state/app_state_scope.dart';
+import '../widgets/section_header.dart';
 
-  final bool autoSave;
-  final TextEditingController displayNameController;
-  final TextEditingController emailController;
-  final TextEditingController notesController;
-  final bool premium;
-  final bool weeklySummary;
-  final ValueChanged<bool> onAutoSaveChanged;
-  final ValueChanged<bool> onPremiumChanged;
-  final VoidCallback onSave;
-  final ValueChanged<bool> onWeeklySummaryChanged;
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       children: <Widget>[
-        Text('Profile', style: theme.textTheme.headlineSmall),
-        const SizedBox(height: 12),
-        TextField(
-          controller: displayNameController,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            labelText: 'Display name',
+        _buildAvatarHeader(context),
+        const SizedBox(height: 24),
+        _buildPersonalInfo(context, state),
+        const SizedBox(height: 20),
+        _buildPreferences(context, state),
+        const SizedBox(height: 20),
+        _buildSubscription(context, state, colors),
+        const SizedBox(height: 20),
+        _buildSaveButton(context, state),
+      ],
+    );
+  }
+
+  Widget _buildAvatarHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: <Widget>[
+            CircleAvatar(
+              radius: 32,
+              backgroundColor: colors.primaryContainer,
+              child: Icon(Icons.person, size: 36, color: colors.primary),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'User Profile',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Manage your account and preferences',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonalInfo(BuildContext context, AppState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const SectionHeader(title: 'Personal Information'),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: <Widget>[
+                TextField(
+                  controller: state.displayNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Display name',
+                    prefixIcon: Icon(Icons.badge_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: state.emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email address',
+                    prefixIcon: Icon(Icons.email_outlined),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: state.notesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Private notes',
+                    prefixIcon: Icon(Icons.notes_outlined),
+                    alignLabelWithHint: true,
+                  ),
+                  minLines: 2,
+                  maxLines: 4,
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: emailController,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            labelText: 'Email address',
-          ),
-          keyboardType: TextInputType.emailAddress,
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: notesController,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            labelText: 'Private notes',
-          ),
-          minLines: 2,
-          maxLines: 4,
-        ),
-        const SizedBox(height: 12),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Auto-save profile'),
-          value: autoSave,
-          onChanged: onAutoSaveChanged,
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Weekly summary email'),
-          value: weeklySummary,
-          onChanged: onWeeklySummaryChanged,
-        ),
-        CheckboxListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Upgrade to premium'),
-          subtitle: const Text('Unlocks advanced reports'),
-          value: premium,
-          onChanged: (value) => onPremiumChanged(value ?? false),
-        ),
-        const SizedBox(height: 12),
-        FilledButton.icon(
-          onPressed: onSave,
-          icon: const Icon(Icons.save),
-          label: const Text('Save profile'),
         ),
       ],
+    );
+  }
+
+  Widget _buildPreferences(BuildContext context, AppState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const SectionHeader(title: 'Preferences'),
+        Card(
+          child: Column(
+            children: <Widget>[
+              SwitchListTile(
+                title: const Text('Auto-save profile'),
+                subtitle: const Text('Save changes automatically'),
+                value: state.autoSave,
+                onChanged: (v) => state.autoSave = v,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+              ),
+              const Divider(height: 1, indent: 16),
+              SwitchListTile(
+                title: const Text('Weekly summary'),
+                subtitle: const Text('Receive a weekly activity digest'),
+                value: state.weeklySummary,
+                onChanged: (v) => state.weeklySummary = v,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubscription(
+      BuildContext context, AppState state, ColorScheme colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const SectionHeader(title: 'Subscription'),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: (state.premium
+                                ? colors.tertiary
+                                : colors.onSurfaceVariant)
+                            .withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        state.premium
+                            ? Icons.diamond_outlined
+                            : Icons.diamond_outlined,
+                        size: 24,
+                        color: state.premium
+                            ? colors.tertiary
+                            : colors.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            state.premium ? 'Premium' : 'Free Plan',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            state.premium
+                                ? 'Advanced reports unlocked'
+                                : 'Upgrade for advanced reports',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: state.premium,
+                      onChanged: (v) => state.premium = v,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSaveButton(BuildContext context, AppState state) {
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        onPressed: () {
+          final name = state.displayNameController.text.trim();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Profile saved for ${name.isEmpty ? 'guest' : name}'),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        },
+        icon: const Icon(Icons.save_outlined),
+        label: const Text('Save Profile'),
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
     );
   }
 }

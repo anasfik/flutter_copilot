@@ -1,6 +1,6 @@
 name: flutter_copilot
 description: Copilot for Flutter apps. Let an AI agent understand and navigate your app UI through the semantics tree.
-version: 0.9.1
+version: 0.10.0
 homepage: https://github.com/anasfik/flutter_copilot
 repository: https://github.com/anasfik/flutter_copilot
 issue_tracker: https://github.com/anasfik/flutter_copilot/issues
@@ -26,3 +26,12 @@ topics:
   - automation
   - accessibility
   - testing
+
+flutter:
+  platforms:
+    android:
+    ios:
+    linux:
+    macos:
+    windows:
+    web:

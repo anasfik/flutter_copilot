@@ -1,3 +1,12 @@
+## 0.10.0
+
+- Added explicit platform support for Android, iOS, Linux, macOS, Windows, and Web.
+- Redesigned example app with polished Material 3 UI and improved UX.
+- Added proper state management with `AppState` and `AppStateScope`.
+- Added themed components: `CopilotPanel`, `PromptInput`, `StatCard`, `SectionHeader`.
+- Improved accessibility semantics for copilot actions.
+- Updated dependencies.
+
 ## 0.9.1
 
 - Initial MVP package.

@@ -1,130 +1,217 @@
 import 'package:flutter/material.dart';
 
+import '../state/app_state.dart';
+import '../state/app_state_scope.dart';
+import '../widgets/prompt_input.dart';
+import '../widgets/section_header.dart';
+import '../widgets/stat_card.dart';
+
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({
-    required this.cartCount,
-    required this.darkMode,
-    required this.promptController,
-    required this.running,
-    required this.samplePrompts,
-    required this.onAddStarterKit,
-    required this.onClearCart,
-    required this.onOpenProfile,
-    required this.onOpenSettings,
-    required this.onRunCopilot,
-    super.key,
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+    final completedTasks = state.tasks.where((t) => t.done).length;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      children: <Widget>[
+        _buildHeroBanner(context),
+        const SizedBox(height: 20),
+        _buildQuickStats(context, state, completedTasks),
+        const SizedBox(height: 20),
+        PromptInput(
+          controller: state.promptController,
+          running: state.running,
+          samplePrompts: state.prompts,
+          onRun: state.runCopilot,
+          onPromptSelected: state.setPrompt,
+        ),
+        const SizedBox(height: 20),
+        _buildQuickActions(context, state),
+      ],
+    );
+  }
+
+  Widget _buildHeroBanner(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: <Color>[
+            colors.primary,
+            colors.primary.withValues(alpha: 0.7),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child:
+                const Icon(Icons.auto_awesome, color: Colors.white, size: 28),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'flutter_copilot',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'AI agent that autonomously navigates your Flutter app UI through the semantics tree.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickStats(
+      BuildContext context, AppState state, int completedTasks) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const SectionHeader(title: 'Overview', subtitle: 'Demo app at a glance'),
+        const SizedBox(height: 4),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: StatCard(
+                icon: Icons.check_circle_outline,
+                label: 'Completed',
+                value: '$completedTasks',
+                color: colors.tertiary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: StatCard(
+                icon: Icons.pending_outlined,
+                label: 'Active',
+                value: '${state.tasks.length - completedTasks}',
+                color: colors.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: StatCard(
+                icon: Icons.shopping_cart_outlined,
+                label: 'Cart',
+                value: '${state.cartCount}',
+                color: colors.secondary,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActions(BuildContext context, AppState state) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const SectionHeader(title: 'Quick Actions'),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: _ActionCard(
+                icon: Icons.person_outline,
+                label: 'Profile',
+                onTap: () => state.navIndex = 1,
+                color: colors.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _ActionCard(
+                icon: Icons.checklist_outlined,
+                label: 'Tasks',
+                onTap: () => state.navIndex = 2,
+                color: colors.tertiary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _ActionCard(
+                icon: Icons.settings_outlined,
+                label: 'Settings',
+                onTap: () => state.navIndex = 3,
+                color: colors.secondary,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    required this.color,
   });
 
-  final int cartCount;
-  final bool darkMode;
-  final TextEditingController promptController;
-  final bool running;
-  final List<String> samplePrompts;
-  final VoidCallback onAddStarterKit;
-  final VoidCallback onClearCart;
-  final VoidCallback onOpenProfile;
-  final VoidCallback onOpenSettings;
-  final VoidCallback onRunCopilot;
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: <Widget>[
-        Text('Copilot demo', style: theme.textTheme.headlineSmall),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text('Enable dark mode', style: theme.textTheme.titleMedium),
-                const SizedBox(height: 6),
-                Text(darkMode ? 'Dark mode is on' : 'Dark mode is off'),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: promptController,
-                  enabled: !running,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Prompt',
-                  ),
-                  minLines: 1,
-                  maxLines: 3,
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            children: <Widget>[
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: <Widget>[
-                    for (final prompt in samplePrompts)
-                      ActionChip(
-                        label: Text(prompt),
-                        onPressed: running
-                            ? null
-                            : () => promptController.text = prompt,
-                      ),
-                  ],
+                child: Icon(icon, size: 24, color: color),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: <Widget>[
-                    FilledButton.icon(
-                      onPressed: running ? null : onRunCopilot,
-                      icon: running
-                          ? const SizedBox.square(
-                              dimension: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.auto_awesome),
-                      label: Text(running ? 'Copilot running' : 'Ask copilot'),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: onOpenProfile,
-                      icon: const Icon(Icons.person),
-                      label: const Text('Open profile'),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: onOpenSettings,
-                      icon: const Icon(Icons.settings),
-                      label: const Text('Open settings'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.inventory_2_outlined),
-            title: const Text('Starter kit'),
-            subtitle:
-                Text('$cartCount item${cartCount == 1 ? '' : 's'} in cart'),
-            trailing: Wrap(
-              spacing: 8,
-              children: <Widget>[
-                IconButton(
-                  tooltip: 'Add starter kit',
-                  onPressed: onAddStarterKit,
-                  icon: const Icon(Icons.add_shopping_cart),
-                ),
-                IconButton(
-                  tooltip: 'Clear cart',
-                  onPressed: cartCount == 0 ? null : onClearCart,
-                  icon: const Icon(Icons.remove_shopping_cart),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

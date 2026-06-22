@@ -5,6 +5,7 @@ import 'app/copilot_example_app.dart';
 import 'services/copilot_service.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     CopilotApp(
       config: buildCopilotConfig(),
