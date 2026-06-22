@@ -4,6 +4,12 @@ Give your Flutter app an invisible AI copilot that can understand the current UI
 
 `flutter_copilot` works from Flutter's semantics tree. It does not need screenshots or an overlay chat UI. You wrap your app with `CopilotApp`, provide an OpenAI-compatible LLM, then call `CopilotController.run(...)` with a natural-language goal.
 
+## Demo
+
+
+https://github.com/user-attachments/assets/7dcb8504-00b3-4f68-80d3-19f74df75417
+
+
 ## Idea & Motivation
 
 Imagine an app full of options, screens, forms, buttons, tabs, dialogs, and settings. Instead of making the user find every control manually, `flutter_copilot` can carry out tasks inside your app from natural language:
