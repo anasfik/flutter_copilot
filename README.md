@@ -9,6 +9,7 @@ Give your Flutter app an invisible AI copilot that can understand the current UI
 
 https://github.com/user-attachments/assets/7dcb8504-00b3-4f68-80d3-19f74df75417
 
+Note: this is clearly vibe-coded ro make demo faster, don't wanna hear anyone opening an issue mentioning this please!
 
 ## Idea & Motivation
 
