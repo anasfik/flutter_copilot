@@ -1,17 +1,23 @@
 # flutter_copilot
 
-**Turn your Flutter app into an AI-operable interface — no screenshots, no overlay chatbot, just natural-language goals becoming real UI actions.**
+**Turn your Flutter app into an AI-operable interface — no screenshots, no overlay chatbot, just natural-language goals becoming real UI actions, natively.**
 
-[![pub package](https://img.shields.io/pub/v/flutter_copilot.svg)](https://pub.dev/packages/flutter_copilot)
-[![Flutter](https://img.shields.io/badge/Flutter-%3E%3D3.32.0-blue.svg)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-%3E%3D3.30.0-blue.svg)](https://dart.dev)
+[![pub.dev](https://img.shields.io/pub/v/flutter_copilot.svg?label=flutter_copilot&logo=dart&logoColor=white)](https://pub.dev/packages/flutter_copilot)
+[![pub.dev points](https://img.shields.io/pub/points/flutter_copilot?logo=dart&logoColor=white&color=blue)](https://pub.dev/packages/flutter_copilot)
+[![pub.dev likes](https://img.shields.io/pub/likes/flutter_copilot?logo=dart&logoColor=white&color=green)](https://pub.dev/packages/flutter_copilot)
+[![GitHub stars](https://img.shields.io/github/stars/anasfik/flutter_copilot?logo=github&logoColor=white&color=orange)](https://github.com/anasfik/flutter_copilot)
+[![Flutter](https://img.shields.io/badge/Flutter-%3E%3D3.32.0-blue.svg?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart SDK](https://img.shields.io/badge/Dart-%3E%3D3.3.0-blue.svg?logo=dart&logoColor=white)](https://dart.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ## Demo
 
 https://github.com/user-attachments/assets/7dcb8504-00b3-4f68-80d3-19f74df75417
 
 Note: this is clearly vibe-coded to make the demo faster, don't wanna hear anyone opening an issue mentioning this please!
+
+> **If you find flutter_copilot interesting or useful, please star the repo.** It helps others discover the project and encourages continued development. Every star counts.
 
 ---
 
@@ -680,7 +686,9 @@ The [`example/`](example) directory contains a full Material 3 demo app showing 
 ```bash
 cd example
 flutter pub get
-flutter run
+flutter run \
+  --dart-define=OPENAI_API_KEY=your_key_here \
+  --dart-define=OPENAI_MODEL=gpt-4.1
 ```
 
 The example app demonstrates:
@@ -688,7 +696,8 @@ The example app demonstrates:
 - `CopilotApp` wrapping with `OpenAILlmAdapter`.
 - Live event streaming with `CopilotController.events`.
 - A prompt input to send goals to the copilot.
-- Material 3 UI with proper semantics labels.
+- Material 3 UI with forms, sliders, search, swipe dismiss, pull-to-refresh,
+  confirmation, and proper semantics labels.
 
 ---
 

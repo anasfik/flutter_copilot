@@ -273,43 +273,48 @@ class _AccentDot extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        children: <Widget>[
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: selected
-                  ? Border.all(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      width: 3,
-                    )
-                  : null,
-              boxShadow: selected
-                  ? <BoxShadow>[
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.4),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                    ]
+      child: Semantics(
+        label: '$label accent color${selected ? ' (selected)' : ''}',
+        button: true,
+        selected: selected,
+        child: Column(
+          children: <Widget>[
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: selected
+                    ? Border.all(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 3,
+                      )
+                    : null,
+                boxShadow: selected
+                    ? <BoxShadow>[
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: selected
+                  ? const Icon(Icons.check, color: Colors.white, size: 18)
                   : null,
             ),
-            child: selected
-                ? const Icon(Icons.check, color: Colors.white, size: 18)
-                : null,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }

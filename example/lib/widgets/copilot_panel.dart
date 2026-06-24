@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CopilotPanel extends StatelessWidget {
+class CopilotPanel extends StatefulWidget {
   const CopilotPanel({
     required this.events,
     required this.running,
@@ -13,6 +13,33 @@ class CopilotPanel extends StatelessWidget {
   final bool running;
   final String status;
   final VoidCallback onClose;
+
+  @override
+  State<CopilotPanel> createState() => _CopilotPanelState();
+}
+
+class _CopilotPanelState extends State<CopilotPanel> {
+  final _scrollController = ScrollController();
+  int _lastEventCount = 0;
+
+  @override
+  void didUpdateWidget(CopilotPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.events.length > _lastEventCount) {
+      _lastEventCount = widget.events.length;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.jumpTo(0);
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +55,8 @@ class CopilotPanel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           _buildHeader(context, colors),
-          if (events.isEmpty && !running) _buildEmptyState(context, colors),
-          if (events.isNotEmpty || running) _buildEventList(context, colors),
+          if (widget.events.isEmpty && !widget.running) _buildEmptyState(context, colors),
+          if (widget.events.isNotEmpty || widget.running) _buildEventList(context, colors),
         ],
       ),
     );
@@ -43,7 +70,7 @@ class CopilotPanel extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          if (running)
+          if (widget.running)
             const SizedBox(
               width: 20,
               height: 20,
@@ -63,7 +90,7 @@ class CopilotPanel extends StatelessWidget {
                       ),
                 ),
                 Text(
-                  status,
+                  widget.status,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: colors.onSurfaceVariant,
                       ),
@@ -73,7 +100,7 @@ class CopilotPanel extends StatelessWidget {
               ],
             ),
           ),
-          if (events.isNotEmpty)
+          if (widget.events.isNotEmpty)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
@@ -81,7 +108,7 @@ class CopilotPanel extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                '${events.length}',
+                '${widget.events.length}',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: colors.onPrimaryContainer,
                       fontWeight: FontWeight.w600,
@@ -91,7 +118,7 @@ class CopilotPanel extends StatelessWidget {
           const SizedBox(width: 4),
           IconButton(
             icon: const Icon(Icons.close, size: 20),
-            onPressed: onClose,
+            onPressed: widget.onClose,
             visualDensity: VisualDensity.compact,
           ),
         ],
@@ -132,13 +159,14 @@ class CopilotPanel extends StatelessWidget {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxHeight: 240),
       child: ListView.separated(
+        controller: _scrollController,
         shrinkWrap: true,
         reverse: true,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: events.length,
+        itemCount: widget.events.length,
         separatorBuilder: (_, __) => const SizedBox(height: 4),
         itemBuilder: (context, index) {
-          final event = events[events.length - 1 - index];
+          final event = widget.events[widget.events.length - 1 - index];
           final isFirst = index == 0;
           return _EventTile(text: event, highlighted: isFirst);
         },

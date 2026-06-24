@@ -13,6 +13,7 @@ class AppState extends ChangeNotifier {
       _events.add(describeEvent(event));
       notifyListeners();
     });
+    searchController.addListener(notifyListeners);
   }
 
   final CopilotController _copilotController;
@@ -65,13 +66,20 @@ class AppState extends ChangeNotifier {
   List<DemoTask> get tasks => List.unmodifiable(_tasks);
   List<String> get prompts => samplePrompts;
 
-  List<DemoTask> get visibleTasks => _tasks.where((task) {
-        return switch (_taskFilter) {
-          'Active' => !task.done,
-          'Done' => task.done,
-          _ => true,
-        };
-      }).toList();
+  List<DemoTask> get visibleTasks {
+    final query = searchController.text.trim().toLowerCase();
+
+    return _tasks.where((task) {
+      final matchesFilter = switch (_taskFilter) {
+        'Active' => !task.done,
+        'Done' => task.done,
+        _ => true,
+      };
+      final matchesSearch =
+          query.isEmpty || task.title.toLowerCase().contains(query);
+      return matchesFilter && matchesSearch;
+    }).toList();
+  }
 
   set navIndex(int value) {
     _navIndex = value;
@@ -138,13 +146,27 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addTask() {
-    _tasks.add(DemoTask('New task ${_tasks.length + 1}'));
+  void addTask([String? title]) {
+    final name = (title ?? '').trim();
+    _tasks.add(DemoTask(
+      name.isEmpty ? 'New task ${_tasks.length + 1}' : name,
+    ));
     notifyListeners();
   }
 
   void toggleTask(DemoTask task) {
     task.done = !task.done;
+    notifyListeners();
+  }
+
+  void removeTask(DemoTask task) {
+    _tasks.remove(task);
+    notifyListeners();
+  }
+
+  Future<void> refreshTasks() async {
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    _status = 'Tasks refreshed';
     notifyListeners();
   }
 
@@ -164,7 +186,9 @@ class AppState extends ChangeNotifier {
 
     final prompt = promptController.text.trim();
     final result = await _copilotController.run(
-      prompt.isEmpty ? 'Open settings and enable dark mode' : prompt,
+      prompt.isEmpty
+          ? 'Open settings and enable dark mode, then on my profile just set some random name, email and some random private notes just for testing, then toggle the auto-save profile, then enable weekly summary option in my profile screen and hit save button, after that show me all active tasks in tasks section, then in enable dark mode and set a random different accent color theme option, enable push notifications, and finally land me again in the home screen.'
+          : prompt,
     );
 
     _running = false;
@@ -198,6 +222,7 @@ class AppState extends ChangeNotifier {
   @override
   void dispose() {
     _subscription?.cancel();
+    searchController.removeListener(notifyListeners);
     promptController.dispose();
     displayNameController.dispose();
     emailController.dispose();

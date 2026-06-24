@@ -16,7 +16,7 @@ class ProfileScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       children: <Widget>[
-        _buildAvatarHeader(context),
+        _buildAvatarHeader(context, state),
         const SizedBox(height: 24),
         _buildPersonalInfo(context, state),
         const SizedBox(height: 20),
@@ -29,9 +29,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatarHeader(BuildContext context) {
+  Widget _buildAvatarHeader(BuildContext context, AppState state) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final name = state.displayNameController.text.trim();
 
     return Card(
       child: Padding(
@@ -41,7 +42,15 @@ class ProfileScreen extends StatelessWidget {
             CircleAvatar(
               radius: 32,
               backgroundColor: colors.primaryContainer,
-              child: Icon(Icons.person, size: 36, color: colors.primary),
+              child: Text(
+                name.isEmpty
+                    ? 'U'
+                    : name[0].toUpperCase(),
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -49,14 +58,16 @@ class ProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'User Profile',
+                    name.isEmpty ? 'User Profile' : name,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Manage your account and preferences',
+                    state.emailController.text.trim().isEmpty
+                        ? 'Manage your account and preferences'
+                        : state.emailController.text.trim(),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurfaceVariant,
                     ),
@@ -219,10 +230,15 @@ class ProfileScreen extends StatelessWidget {
       child: FilledButton.icon(
         onPressed: () {
           final name = state.displayNameController.text.trim();
+          final email = state.emailController.text.trim();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text('Profile saved for ${name.isEmpty ? 'guest' : name}'),
+              content: Text(
+                name.isEmpty && email.isEmpty
+                    ? 'Profile saved'
+                    : 'Profile saved for ${name.isEmpty ? 'guest' : name}'
+                        '${email.isEmpty ? '' : ' ($email)'}',
+              ),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),

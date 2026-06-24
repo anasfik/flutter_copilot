@@ -30,6 +30,8 @@ class HomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         _buildQuickActions(context, state),
+        const SizedBox(height: 20),
+        _buildCommerceDemo(context, state),
       ],
     );
   }
@@ -83,7 +85,7 @@ class HomeScreen extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: const <Widget>[
-              _HeroPill(label: 'Mock LLM by default'),
+              _HeroPill(label: 'OpenAI tool calling'),
               _HeroPill(label: 'Semantics driven'),
               _HeroPill(label: 'Approval dialog'),
             ],
@@ -173,6 +175,85 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCommerceDemo(BuildContext context, AppState state) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const SectionHeader(
+          title: 'Commerce Demo',
+          subtitle: 'Useful for testing tap, safety, and confirmation flows',
+        ),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: colors.secondaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.shopping_bag_outlined,
+                          color: colors.secondary),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Semantics(
+                        label: 'Starter kit in cart: ${state.cartCount}',
+                        child: Text(
+                          'Starter kit in cart: ${state.cartCount}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Semantics(
+                        label: 'Add Starter Kit to cart',
+                        button: true,
+                        child: OutlinedButton.icon(
+                          onPressed: state.addCart,
+                          icon: const Icon(Icons.add_shopping_cart),
+                          label: const Text('Add Starter Kit'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Semantics(
+                        label: 'Clear Cart',
+                        button: true,
+                        enabled: state.cartCount > 0,
+                        child: OutlinedButton.icon(
+                          onPressed:
+                              state.cartCount == 0 ? null : state.clearCart,
+                          icon: const Icon(Icons.remove_shopping_cart_outlined),
+                          label: const Text('Clear Cart'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

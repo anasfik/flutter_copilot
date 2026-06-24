@@ -19,6 +19,6 @@ void main() {
     await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
     expect(find.text('Ask Copilot'), findsOneWidget);
-    expect(find.text('Demo mode'), findsOneWidget);
+    expect(find.text('OpenAI'), findsOneWidget);
   });
 }

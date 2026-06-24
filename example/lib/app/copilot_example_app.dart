@@ -64,7 +64,12 @@ class _CopilotExampleAppState extends State<CopilotExampleApp> {
             title: 'flutter_copilot demo',
             theme: (state.darkMode ? AppTheme.dark : AppTheme.light)
                 .copyWith(colorScheme: colors),
-            home: _CopilotScaffold(state: state),
+            home: MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(state.fontScale),
+              ),
+              child: _CopilotScaffold(state: state),
+            ),
           );
         },
       ),

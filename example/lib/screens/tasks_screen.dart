@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/demo_task.dart';
 import '../state/app_state.dart';
 import '../state/app_state_scope.dart';
 import '../widgets/section_header.dart';
@@ -11,13 +12,16 @@ class TasksScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      children: <Widget>[
-        _buildTaskStats(context, state),
-        const SizedBox(height: 20),
-        _buildTaskList(context, state),
-      ],
+    return RefreshIndicator(
+      onRefresh: state.refreshTasks,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        children: <Widget>[
+          _buildTaskStats(context, state),
+          const SizedBox(height: 20),
+          _buildTaskList(context, state),
+        ],
+      ),
     );
   }
 
@@ -25,7 +29,8 @@ class TasksScreen extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final completed = state.tasks.where((t) => t.done).length;
     final active = state.tasks.length - completed;
-    final progress = state.tasks.isEmpty ? 0.0 : completed / state.tasks.length;
+    final progress =
+        state.tasks.isEmpty ? 0.0 : completed / state.tasks.length;
 
     return Card(
       child: Padding(
@@ -102,8 +107,13 @@ class TasksScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        SectionHeader(
+        const SectionHeader(
           title: 'Tasks',
+          subtitle: 'Pull down to refresh or swipe a task left to archive it',
+        ),
+        const SizedBox(height: 8),
+        SectionHeader(
+          title: 'Task Filter',
           subtitle: '${state.visibleTasks.length} tasks',
           trailing: SegmentedButton<String>(
             segments: const <ButtonSegment<String>>[
@@ -160,9 +170,20 @@ class TasksScreen extends StatelessWidget {
                 )
               else
                 for (final task in state.visibleTasks)
-                  _TaskTile(
-                    task: task,
-                    onToggle: () => state.toggleTask(task),
+                  Dismissible(
+                    key: ValueKey(task.title),
+                    direction: DismissDirection.endToStart,
+                    onDismissed: (_) => state.removeTask(task),
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 20),
+                      color: colors.errorContainer,
+                      child: Icon(Icons.archive_outlined, color: colors.error),
+                    ),
+                    child: _TaskTile(
+                      task: task,
+                      onToggle: () => state.toggleTask(task),
+                    ),
                   ),
             ],
           ),
@@ -171,7 +192,7 @@ class TasksScreen extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: state.addTask,
+            onPressed: () => _showAddTaskDialog(context, state),
             icon: const Icon(Icons.add),
             label: const Text('Add Task'),
             style: OutlinedButton.styleFrom(
@@ -184,6 +205,39 @@ class TasksScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Future<void> _showAddTaskDialog(BuildContext context, AppState state) async {
+    final controller = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.add_task),
+        title: const Text('New task'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Task name',
+            prefixIcon: Icon(Icons.edit_outlined),
+          ),
+          onSubmitted: (value) => Navigator.of(context).pop(value),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+    if (name != null) {
+      state.addTask(name);
+    }
   }
 }
 
@@ -222,18 +276,18 @@ class _MiniStat extends StatelessWidget {
 class _TaskTile extends StatelessWidget {
   const _TaskTile({required this.task, required this.onToggle});
 
-  final dynamic task;
+  final DemoTask task;
   final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
-    final isDone = task.done as bool;
+    final isDone = task.done;
 
     return CheckboxListTile(
       value: isDone,
       onChanged: (_) => onToggle(),
       title: Text(
-        task.title as String,
+        task.title,
         style: TextStyle(
           decoration: isDone ? TextDecoration.lineThrough : null,
         ),

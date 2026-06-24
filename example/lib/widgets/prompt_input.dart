@@ -48,10 +48,10 @@ class PromptInput extends StatelessWidget {
                 const Spacer(),
                 Tooltip(
                   message:
-                      'The example uses a deterministic mock LLM unless COPILOT_DEMO_MODE=false.',
+                      'Configure OPENAI_API_KEY and OPENAI_MODEL to run the real copilot.',
                   child: Chip(
                     visualDensity: VisualDensity.compact,
-                    label: const Text('Demo mode'),
+                    label: const Text('OpenAI'),
                     avatar: Icon(Icons.bolt, size: 16, color: colors.primary),
                   ),
                 ),
