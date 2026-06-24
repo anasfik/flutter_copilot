@@ -73,10 +73,20 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'AI agent that autonomously navigates your Flutter app UI through the semantics tree.',
+            'Run a prompt and watch the copilot navigate tabs, edit fields, toggle settings, use sliders, and ask for approval.',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: Colors.white.withValues(alpha: 0.85),
             ),
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: const <Widget>[
+              _HeroPill(label: 'Mock LLM by default'),
+              _HeroPill(label: 'Semantics driven'),
+              _HeroPill(label: 'Approval dialog'),
+            ],
           ),
         ],
       ),
@@ -90,7 +100,8 @@ class HomeScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const SectionHeader(title: 'Overview', subtitle: 'Demo app at a glance'),
+        const SectionHeader(
+            title: 'Overview', subtitle: 'Demo app at a glance'),
         const SizedBox(height: 4),
         Row(
           children: <Widget>[
@@ -164,6 +175,34 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _HeroPill extends StatelessWidget {
+  const _HeroPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: label,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+      ),
     );
   }
 }

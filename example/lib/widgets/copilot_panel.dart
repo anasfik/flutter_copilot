@@ -166,10 +166,18 @@ class _EventTile extends StatelessWidget {
     } else if (text.startsWith('Finished')) {
       icon = Icons.check_circle_outline;
       iconColor = colors.tertiary;
+    } else if (text.contains('Confirmation')) {
+      icon = Icons.privacy_tip_outlined;
+      iconColor = colors.tertiary;
     } else if (text.startsWith('Failed') || text.contains('failed')) {
       icon = Icons.error_outline;
       iconColor = colors.error;
-    } else if (text.contains('tap') || text.contains('scroll') || text.contains('type')) {
+    } else if (text.contains('tap') ||
+        text.contains('scroll') ||
+        text.contains('type') ||
+        text.contains('replace_text') ||
+        text.contains('slider') ||
+        text.contains('drag')) {
       icon = Icons.touch_app_outlined;
       iconColor = colors.secondary;
     } else if (text.contains('LLM')) {

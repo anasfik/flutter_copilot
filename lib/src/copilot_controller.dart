@@ -84,6 +84,10 @@ class CopilotController {
       CopilotActionPlanned(:final action) => 'planned: ${action.runtimeType}',
       CopilotActionExecuted(:final result) =>
         'action ${result.success ? 'succeeded' : 'failed'}: ${result.message}',
+      CopilotConfirmationRequested(:final reason) =>
+        'confirmation requested: $reason',
+      CopilotConfirmationResolved(:final approved) =>
+        'confirmation ${approved ? 'approved' : 'denied'}',
       CopilotFinished(:final message) => 'finished: $message',
     };
   }

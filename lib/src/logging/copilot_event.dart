@@ -77,6 +77,24 @@ class CopilotActionExecuted extends CopilotEvent {
   final ActionResult result;
 }
 
+/// Emitted when the copilot asks for confirmation.
+class CopilotConfirmationRequested extends CopilotEvent {
+  /// Creates a confirmation-requested event.
+  const CopilotConfirmationRequested(this.reason);
+
+  /// Why confirmation is needed.
+  final String reason;
+}
+
+/// Emitted after confirmation is approved or denied.
+class CopilotConfirmationResolved extends CopilotEvent {
+  /// Creates a confirmation-resolved event.
+  const CopilotConfirmationResolved(this.approved);
+
+  /// Whether approval was granted.
+  final bool approved;
+}
+
 /// Emitted when a run finishes.
 class CopilotFinished extends CopilotEvent {
   /// Creates a finish event.

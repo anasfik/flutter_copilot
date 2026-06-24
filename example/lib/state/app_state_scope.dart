@@ -18,6 +18,5 @@ class AppStateScope extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(AppStateScope oldWidget) =>
-      state != oldWidget.state;
+  bool updateShouldNotify(AppStateScope oldWidget) => state != oldWidget.state;
 }

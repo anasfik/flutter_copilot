@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_copilot/flutter_copilot.dart';
 import 'package:flutter_copilot_example/app/copilot_example_app.dart';
@@ -14,8 +15,10 @@ void main() {
       ),
     );
 
-    expect(find.text('Copilot demo'), findsOneWidget);
-    expect(find.text('Ask copilot'), findsOneWidget);
-    expect(find.text('Dark mode is off'), findsOneWidget);
+    expect(find.text('flutter_copilot'), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(find.text('Ask Copilot'), findsOneWidget);
+    expect(find.text('Demo mode'), findsOneWidget);
   });
 }

@@ -99,6 +99,77 @@ void main() {
     expect(result, isA<CopilotFailed>());
     expect((result as CopilotFailed).reason, 'fatal action failure');
   });
+
+  testWidgets('asks before sensitive actions and continues when approved',
+      (tester) async {
+    var asked = false;
+    final executed = <CopilotAction>[];
+    final session = CopilotSession(
+      goal: 'Delete account',
+      config: CopilotConfig(
+        llm: FakeLlmAdapter(
+          <LlmToolCall>[
+            const LlmToolCall(
+              id: 'c1',
+              name: 'tap',
+              arguments: <String, Object?>{'id': 'n1'},
+            ),
+            const LlmToolCall(
+              id: 'done',
+              name: 'done',
+              arguments: <String, Object?>{'summary': 'Deleted.'},
+            ),
+          ],
+        ),
+        settleDelay: Duration.zero,
+        onConfirmationRequest: (request) async {
+          asked = true;
+          expect(request.action, isA<TapAction>());
+          expect(request.node?.label, 'Delete account');
+          return true;
+        },
+      ),
+      emit: (_) {},
+      capture: _DestructiveCapture(),
+      executor: _RecordingExecutor(executed),
+    );
+
+    final result = await session.run();
+
+    expect(result, isA<CopilotCompleted>());
+    expect(asked, isTrue);
+    expect(executed, hasLength(1));
+  });
+
+  testWidgets('explicit confirmation tool cancels when denied', (tester) async {
+    final events = <CopilotEvent>[];
+    final session = CopilotSession(
+      goal: 'Do risky thing',
+      config: CopilotConfig(
+        llm: FakeLlmAdapter(
+          <LlmToolCall>[
+            const LlmToolCall(
+              id: 'confirm',
+              name: 'request_confirmation',
+              arguments: <String, Object?>{'reason': 'Risky final step'},
+            ),
+          ],
+        ),
+        settleDelay: Duration.zero,
+        onConfirmationRequest: (_) async => false,
+      ),
+      emit: events.add,
+      capture: _FakeCapture(),
+      executor: _FakeExecutor(),
+    );
+
+    final result = await session.run();
+
+    expect(result, isA<CopilotCancelled>());
+    expect(events.whereType<CopilotConfirmationRequested>(), hasLength(1));
+    expect(events.whereType<CopilotConfirmationResolved>().single.approved,
+        isFalse);
+  });
 }
 
 class _FakeCapture extends SceneCapture {
@@ -111,6 +182,24 @@ class _FakeCapture extends SceneCapture {
           semanticsId: 1,
           rect: Rect.fromLTWH(0, 0, 120, 48),
           label: 'Settings',
+          actions: <SceneAction>{SceneAction.tap},
+        ),
+      ],
+      idToSemanticsId: const <String, int>{'n1': 1},
+    );
+  }
+}
+
+class _DestructiveCapture extends SceneCapture {
+  @override
+  SceneGraph capture() {
+    return SceneGraph(
+      nodes: const <SceneNode>[
+        SceneNode(
+          id: 'n1',
+          semanticsId: 1,
+          rect: Rect.fromLTWH(0, 0, 120, 48),
+          label: 'Delete account',
           actions: <SceneAction>{SceneAction.tap},
         ),
       ],

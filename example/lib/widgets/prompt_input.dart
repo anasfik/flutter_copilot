@@ -35,14 +35,24 @@ class PromptInput extends StatelessWidget {
                     color: colors.primaryContainer,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(Icons.auto_awesome,
-                      size: 20, color: colors.primary),
+                  child:
+                      Icon(Icons.auto_awesome, size: 20, color: colors.primary),
                 ),
                 const SizedBox(width: 12),
                 Text(
                   'Ask Copilot',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Tooltip(
+                  message:
+                      'The example uses a deterministic mock LLM unless COPILOT_DEMO_MODE=false.',
+                  child: Chip(
+                    visualDensity: VisualDensity.compact,
+                    label: const Text('Demo mode'),
+                    avatar: Icon(Icons.bolt, size: 16, color: colors.primary),
                   ),
                 ),
               ],
@@ -55,7 +65,8 @@ class PromptInput extends StatelessWidget {
               maxLines: 4,
               decoration: InputDecoration(
                 hintText: 'What should the copilot do?',
-                hintStyle: TextStyle(color: colors.onSurfaceVariant.withValues(alpha: 0.5)),
+                hintStyle: TextStyle(
+                    color: colors.onSurfaceVariant.withValues(alpha: 0.5)),
                 suffixIcon: running
                     ? const Padding(
                         padding: EdgeInsets.all(12),

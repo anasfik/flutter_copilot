@@ -1,8 +1,9 @@
 const samplePrompts = <String>[
   'Open settings and enable dark mode',
-  'Go to profile and set the display name to Alex',
+  'Go to profile, set the display name and email, then save',
   'Open tasks and mark Write release notes as done',
   'Go to tasks and show only active tasks',
-  'Open settings and enable notifications',
-  'Open the danger zone but cancel the reset dialog',
+  'Open settings and enable notifications and weekly email',
+  'Open settings and set the font scale slider high',
+  'Reset demo data after asking me for confirmation',
 ];

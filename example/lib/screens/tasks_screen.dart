@@ -25,8 +25,7 @@ class TasksScreen extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final completed = state.tasks.where((t) => t.done).length;
     final active = state.tasks.length - completed;
-    final progress =
-        state.tasks.isEmpty ? 0.0 : completed / state.tasks.length;
+    final progress = state.tasks.isEmpty ? 0.0 : completed / state.tasks.length;
 
     return Card(
       child: Padding(
@@ -113,8 +112,7 @@ class TasksScreen extends StatelessWidget {
               ButtonSegment(value: 'Done', label: Text('Done')),
             ],
             selected: <String>{state.taskFilter},
-            onSelectionChanged: (values) =>
-                state.taskFilter = values.first,
+            onSelectionChanged: (values) => state.taskFilter = values.first,
             style: ButtonStyle(
               visualDensity: VisualDensity.compact,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -148,12 +146,14 @@ class TasksScreen extends StatelessWidget {
                     children: <Widget>[
                       Icon(Icons.checklist_outlined,
                           size: 40,
-                          color: colors.onSurfaceVariant.withValues(alpha: 0.3)),
+                          color:
+                              colors.onSurfaceVariant.withValues(alpha: 0.3)),
                       const SizedBox(height: 8),
                       Text(
                         'No tasks match this filter',
                         style: TextStyle(
-                            color: colors.onSurfaceVariant.withValues(alpha: 0.5)),
+                            color:
+                                colors.onSurfaceVariant.withValues(alpha: 0.5)),
                       ),
                     ],
                   ),
@@ -227,43 +227,19 @@ class _TaskTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final isDone = task.done as bool;
 
-    return InkWell(
-      onTap: onToggle,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: <Widget>[
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: isDone ? colors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
-                border: isDone
-                    ? null
-                    : Border.all(color: colors.outline, width: 2),
-              ),
-              child: isDone
-                  ? const Icon(Icons.check, size: 16, color: Colors.white)
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                task.title as String,
-                style: TextStyle(
-                  decoration: isDone ? TextDecoration.lineThrough : null,
-                  color: isDone ? colors.onSurfaceVariant : null,
-                ),
-              ),
-            ),
-          ],
+    return CheckboxListTile(
+      value: isDone,
+      onChanged: (_) => onToggle(),
+      title: Text(
+        task.title as String,
+        style: TextStyle(
+          decoration: isDone ? TextDecoration.lineThrough : null,
         ),
       ),
+      controlAffinity: ListTileControlAffinity.leading,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
     );
   }
 }

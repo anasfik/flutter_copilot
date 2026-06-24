@@ -8,6 +8,7 @@ import '../widgets/copilot_panel.dart';
 import '../screens/home_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/settings_screen.dart';
+import '../services/demo_confirmation.dart';
 import '../screens/tasks_screen.dart';
 
 class CopilotExampleApp extends StatefulWidget {
@@ -59,6 +60,7 @@ class _CopilotExampleAppState extends State<CopilotExampleApp> {
 
           return MaterialApp(
             debugShowCheckedModeBanner: false,
+            navigatorKey: demoNavigatorKey,
             title: 'flutter_copilot demo',
             theme: (state.darkMode ? AppTheme.dark : AppTheme.light)
                 .copyWith(colorScheme: colors),

@@ -221,8 +221,8 @@ class ProfileScreen extends StatelessWidget {
           final name = state.displayNameController.text.trim();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  'Profile saved for ${name.isEmpty ? 'guest' : name}'),
+              content:
+                  Text('Profile saved for ${name.isEmpty ? 'guest' : name}'),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),

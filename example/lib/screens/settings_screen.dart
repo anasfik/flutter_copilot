@@ -37,40 +37,20 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Icon(
-                      state.darkMode
-                          ? Icons.dark_mode_outlined
-                          : Icons.light_mode_outlined,
-                      color: colors.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            'Dark mode',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w500),
-                          ),
-                          Text(
-                            state.darkMode
-                                ? 'Dark theme active'
-                                : 'Light theme active',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Switch(
-                      value: state.darkMode,
-                      onChanged: (v) => state.darkMode = v,
-                    ),
-                  ],
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: Icon(
+                    state.darkMode
+                        ? Icons.dark_mode_outlined
+                        : Icons.light_mode_outlined,
+                    color: colors.primary,
+                  ),
+                  title: const Text('Dark mode'),
+                  subtitle: Text(
+                    state.darkMode ? 'Dark theme active' : 'Light theme active',
+                  ),
+                  value: state.darkMode,
+                  onChanged: (v) => state.darkMode = v,
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -102,6 +82,26 @@ class SettingsScreen extends StatelessWidget {
                   value: state.compactMode,
                   onChanged: (v) => state.compactMode = v,
                 ),
+                const SizedBox(height: 12),
+                Text(
+                  'Font scale',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w500),
+                ),
+                Semantics(
+                  label: 'Font scale',
+                  value: '${(state.fontScale * 100).round()} percent',
+                  child: Slider(
+                    value: state.fontScale,
+                    min: 0.8,
+                    max: 1.4,
+                    divisions: 6,
+                    label: '${(state.fontScale * 100).round()}%',
+                    onChanged: (v) => state.fontScale = v,
+                  ),
+                ),
               ],
             ),
           ),
@@ -116,14 +116,29 @@ class SettingsScreen extends StatelessWidget {
       children: <Widget>[
         const SectionHeader(title: 'Notifications'),
         Card(
-          child: SwitchListTile(
-            title: const Text('Push notifications'),
-            subtitle: const Text('Receive product and task alerts'),
-            value: state.notifications,
-            onChanged: (v) => state.notifications = v,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+          child: Column(
+            children: <Widget>[
+              SwitchListTile(
+                title: const Text('Push notifications'),
+                subtitle: const Text('Receive product and task alerts'),
+                value: state.notifications,
+                onChanged: (v) => state.notifications = v,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+              ),
+              const Divider(height: 1, indent: 16),
+              SwitchListTile(
+                title: const Text('Weekly email'),
+                subtitle: const Text('Send a weekly summary email'),
+                value: state.weeklySummary,
+                onChanged: (v) => state.weeklySummary = v,
+                shape: const RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.vertical(bottom: Radius.circular(16)),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -153,8 +168,8 @@ class SettingsScreen extends StatelessWidget {
                         color: colors.errorContainer,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child:
-                          Icon(Icons.warning_amber_rounded, color: colors.error),
+                      child: Icon(Icons.warning_amber_rounded,
+                          color: colors.error),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -186,7 +201,8 @@ class SettingsScreen extends StatelessWidget {
                     label: const Text('Reset Everything'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colors.error,
-                      side: BorderSide(color: colors.error.withValues(alpha: 0.5)),
+                      side: BorderSide(
+                          color: colors.error.withValues(alpha: 0.5)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

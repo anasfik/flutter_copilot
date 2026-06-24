@@ -8,6 +8,15 @@ enum SceneAction {
   /// Long-press action.
   longPress,
 
+  /// Dismiss action.
+  dismiss,
+
+  /// Increase value action.
+  increase,
+
+  /// Decrease value action.
+  decrease,
+
   /// Scroll up action.
   scrollUp,
 

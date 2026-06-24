@@ -10,7 +10,7 @@ import '../utils/copilot_event_text.dart';
 class AppState extends ChangeNotifier {
   AppState(this._copilotController) {
     _subscription = _copilotController.events.listen((event) {
-      _events.insert(0, describeEvent(event));
+      _events.add(describeEvent(event));
       notifyListeners();
     });
   }
@@ -20,13 +20,14 @@ class AppState extends ChangeNotifier {
 
   int _navIndex = 0;
   bool _darkMode = false;
-  bool _notifications = true;
+  bool _notifications = false;
   bool _compactMode = false;
   bool _autoSave = true;
-  bool _weeklySummary = true;
+  bool _weeklySummary = false;
   bool _premium = false;
   int _accentIndex = 0;
   int _cartCount = 0;
+  double _fontScale = 1;
   bool _running = false;
   bool _copilotPanelOpen = false;
   String _status = 'Ready';
@@ -55,6 +56,7 @@ class AppState extends ChangeNotifier {
   bool get premium => _premium;
   int get accentIndex => _accentIndex;
   int get cartCount => _cartCount;
+  double get fontScale => _fontScale;
   bool get running => _running;
   bool get copilotPanelOpen => _copilotPanelOpen;
   String get status => _status;
@@ -108,6 +110,11 @@ class AppState extends ChangeNotifier {
 
   set accentIndex(int value) {
     _accentIndex = value;
+    notifyListeners();
+  }
+
+  set fontScale(double value) {
+    _fontScale = value;
     notifyListeners();
   }
 
@@ -180,7 +187,8 @@ class AppState extends ChangeNotifier {
     _cartCount = 0;
     _premium = false;
     _weeklySummary = false;
-    _notifications = true;
+    _notifications = false;
+    _fontScale = 1;
     _autoSave = true;
     _compactMode = false;
     _status = 'Demo data reset';

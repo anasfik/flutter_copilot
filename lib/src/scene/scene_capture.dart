@@ -1,3 +1,5 @@
+import 'dart:ui' show CheckedState, Tristate;
+
 import 'package:flutter/rendering.dart';
 
 import 'scene_graph.dart';
@@ -99,6 +101,15 @@ class SceneCapture {
     if (data.hasAction(SemanticsAction.longPress)) {
       actions.add(SceneAction.longPress);
     }
+    if (data.hasAction(SemanticsAction.dismiss)) {
+      actions.add(SceneAction.dismiss);
+    }
+    if (data.hasAction(SemanticsAction.increase)) {
+      actions.add(SceneAction.increase);
+    }
+    if (data.hasAction(SemanticsAction.decrease)) {
+      actions.add(SceneAction.decrease);
+    }
     if (data.hasAction(SemanticsAction.scrollUp)) {
       actions.add(SceneAction.scrollUp);
     }
@@ -126,16 +137,16 @@ class SceneCapture {
     if (semanticsFlags.isTextField) {
       flags.add(SceneFlag.textField);
     }
-    if (semanticsFlags.isEnabled) {
+    if (semanticsFlags.isEnabled == Tristate.isTrue) {
       flags.add(SceneFlag.enabled);
     }
-    if (semanticsFlags.isFocused) {
+    if (semanticsFlags.isFocused == Tristate.isTrue) {
       flags.add(SceneFlag.focused);
     }
-    if (semanticsFlags.isChecked) {
+    if (semanticsFlags.isChecked == CheckedState.isTrue) {
       flags.add(SceneFlag.checked);
     }
-    if (semanticsFlags.isToggled) {
+    if (semanticsFlags.isToggled == Tristate.isTrue) {
       flags.add(SceneFlag.toggled);
     }
     if (semanticsFlags.isHidden) {
