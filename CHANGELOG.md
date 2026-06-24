@@ -1,3 +1,15 @@
+## 0.11.0
+
+- Expanded action set to 18 types: tap, long_press, type_text, clear_text, replace_text, set_text_selection, keyboard_action, scroll, drag, long_press_drag, slider_to_value, adjust_value, dismiss, system_back, request_confirmation, wait, done, fail.
+- Added action batching — model can call multiple independent tools in one response.
+- Added `CopilotAccessMode` with `fullAccess` and `askBeforeSensitiveActions`.
+- Added `CopilotConfirmationRequest` and `CopilotConfirmationCallback` for user approval flows.
+- Improved safety policy with custom `blockedLabels` patterns (String and RegExp).
+- Added `CopilotRunResult` sealed types: `CopilotCompleted`, `CopilotFailed`, `CopilotCancelled`, `CopilotMaxStepsExceeded`.
+- Rewrote README with full architecture docs, badges, API reference, and use cases.
+- Fixed `FlagsCollection` analysis for Flutter 3.44.2 compatibility.
+- Redesigned example app with interactive font scale, add task dialog, commerce demo semantics, profile save feedback, and copilot panel auto-scroll.
+
 ## 0.10.0
 
 - Added explicit platform support for Android, iOS, Linux, macOS, Windows, and Web.
