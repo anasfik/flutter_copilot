@@ -92,6 +92,7 @@ class CopilotSession {
     messages.add(builder.buildGoalMessage(goal));
 
     final actionResults = <Map<String, Object?>>[];
+    final toolDefinitions = _mergedToolDefinitions();
 
     for (var step = 0; step < config.maxSteps; step++) {
       steps++;
@@ -121,11 +122,11 @@ class CopilotSession {
         if (retryConfig != null) {
           final retry = RetryEngine(retryConfig);
           response = await retry.run(
-            () => config.llm.complete(messages: messages, tools: copilotTools),
+            () => config.llm.complete(messages: messages, tools: toolDefinitions),
           );
         } else {
-          response =
-              await config.llm.complete(messages: messages, tools: copilotTools);
+          response = await config.llm
+              .complete(messages: messages, tools: toolDefinitions);
         }
       } catch (error) {
         final reason = 'LLM request failed: $error';
@@ -149,24 +150,115 @@ class CopilotSession {
 
       final parsedCalls = <MapEntry<LlmToolCall, CopilotAction>>[];
       for (final toolCall in toolCalls) {
-        final CopilotAction action;
+        CopilotAction action;
         try {
           action =
               CopilotAction.fromToolCall(toolCall.name, toolCall.arguments);
         } catch (error) {
+          if (config.customActions[toolCall.name] == null) {
+            return _finish(
+              'Model returned an invalid tool call: $error',
+              startTime: startTime,
+              steps: steps,
+              executedActions: executedActions,
+              actions: actionResults,
+            );
+          }
+          // A registered custom tool owns its argument shape; the built-in
+          // parser does not apply to it.
+          action = UnknownAction(toolCall.name, toolCall.arguments);
+        }
+        parsedCalls.add(MapEntry(toolCall, action));
+        emit(CopilotActionPlanned(action));
+      }
+
+      // Custom-first dispatch (custom action registry): a tool call whose
+      // name is registered runs through the app's handler with its raw
+      // arguments; only names without a handler fall through to the built-in
+      // pipeline. For the terminal names, a registered handler is consulted
+      // before the run ends: `done` completes the run only when the handler
+      // reports success (the app verified the goal against fresh state), a
+      // recoverable `done` failure feeds back to the model and the loop
+      // continues, and `fail` ends the run with the handler's message.
+      Future<CopilotRunResult?> runCustomCall(MapEntry<LlmToolCall, CopilotAction> entry) async {
+        final call = entry.key;
+        final handler = config.customActions[call.name]!;
+        if (call.name == 'done' && toolCalls.length > 1) {
           return _finish(
-            'Model returned an invalid tool call: $error',
+            'done must be the only tool call in a response.',
             startTime: startTime,
             steps: steps,
             executedActions: executedActions,
             actions: actionResults,
           );
         }
-        parsedCalls.add(MapEntry(toolCall, action));
-        emit(CopilotActionPlanned(action));
+        final action = CustomAction(name: call.name, args: call.arguments);
+        final result = await handler.execute(action);
+        emit(CopilotActionExecuted(UnknownAction(call.name, call.arguments), result));
+        executedActions++;
+        actionResults.add(<String, Object?>{
+          'tool': call.name,
+          'arguments': call.arguments,
+          'result': result.toJson(),
+        });
+        if (call.name == 'done') {
+          if (result.success) {
+            emit(CopilotFinished(result.message));
+            final collector = config.metricsCollector;
+            if (collector != null) {
+              collector.record(CopilotMetrics(
+                goal: goal,
+                startTime: startTime,
+                endTime: DateTime.now(),
+                steps: steps,
+                actionsExecuted: executedActions,
+                succeeded: true,
+              ));
+            }
+            final store = config.memoryStore;
+            if (store != null) {
+              await store.add(MemoryEntry(
+                goal: goal,
+                result: result.message,
+                timestamp: DateTime.now(),
+              ));
+            }
+            return CopilotCompleted(result.message);
+          }
+          if (!result.recoverable) {
+            return _finish(result.message,
+                startTime: startTime,
+                steps: steps,
+                executedActions: executedActions,
+                actions: actionResults);
+          }
+          // Not verified yet: keep the loop running on the fed-back result.
+          return null;
+        }
+        if (call.name == 'fail') {
+          return _finish(result.message,
+              startTime: startTime,
+              steps: steps,
+              executedActions: executedActions,
+              actions: actionResults);
+        }
+        if (!result.success && !result.recoverable) {
+          return _finish(result.message,
+              startTime: startTime,
+              steps: steps,
+              executedActions: executedActions,
+              actions: actionResults);
+        }
+        return null;
       }
 
       for (final entry in parsedCalls) {
+        final customHandler = config.customActions[entry.key.name];
+        if (customHandler != null) {
+          final terminal = await runCustomCall(entry);
+          if (terminal != null) return terminal;
+          continue;
+        }
         switch (entry.value) {
           case DoneAction(:final summary):
             if (toolCalls.length > 1) {
@@ -268,6 +360,15 @@ class CopilotSession {
       var idx = 0;
       while (idx < parsedCalls.length) {
         final entry = parsedCalls[idx];
+
+        // Custom-first dispatch: any call whose name is in the registry was
+        // already executed through its handler in the pass above (including
+        // the terminal `done`/`fail` handling). Skip it here — the built-in
+        // pipeline must not run it a second time.
+        if (config.customActions.containsKey(entry.key.name)) {
+          idx++;
+          continue;
+        }
 
         if (entry.value is RequestConfirmationAction) {
           idx++;
@@ -462,6 +563,20 @@ class CopilotSession {
   }
 
   SceneGraph _observe() => _compressor.compress(_capture.capture());
+
+  /// The LLM tool definitions for this run: the built-in vocabulary plus
+  /// [CopilotConfig.customActionTools] (custom action registry). A custom
+  /// descriptor named like a built-in tool overrides that built-in
+  /// definition; the built-in set itself is never modified.
+  List<LlmTool> _mergedToolDefinitions() {
+    final custom = config.customActionTools;
+    if (custom.isEmpty) return copilotTools;
+    return <LlmTool>[
+      for (final tool in copilotTools)
+        if (custom.every((c) => c.name != tool.name)) tool,
+      ...custom,
+    ];
+  }
 
   Future<bool> _requestConfirmation(
     String reason, {

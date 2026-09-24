@@ -203,7 +203,7 @@ Each cycle:
 
 ```yaml
 dependencies:
-  flutter_copilot: ^0.12.0
+  flutter_copilot: ^0.13.0
 ```
 
 ### 2. Wrap your app with `CopilotApp`
@@ -569,15 +569,64 @@ CopilotConfig(
     'database_query': MyDatabaseHandler(),
     'send_notification': MyNotificationHandler(),
   },
+  customActionTools: const [
+    LlmTool(
+      name: 'database_query',
+      description: 'Runs a database query.',
+      parameters: <String, Object?>{
+        'type': 'object',
+        'properties': <String, Object?>{
+          'query': <String, Object?>{'type': 'string'},
+        },
+        'required': <String>['query'],
+      },
+    ),
+    LlmTool(
+      name: 'send_notification',
+      description: 'Sends a push notification.',
+      parameters: <String, Object?>{
+        'type': 'object',
+        'properties': <String, Object?>{
+          'text': <String, Object?>{'type': 'string'},
+        },
+        'required': <String>['text'],
+      },
+    ),
+  ],
 )
 ```
 
+`customActions` wires the **execution** side; `customActionTools` wires the
+**description** side. Without `customActionTools` the model never sees your
+tools in the tool list, so it can never call them on its own — supply one
+`LlmTool` descriptor per registered handler.
+
 ### How it works
 
-- When the model emits a tool call matching a registered handler, it's routed to your `CustomActionHandler`
-- The handler receives a `CustomAction` with the tool name and raw arguments
-- Return `ActionResult.success()` or `ActionResult.failure()` to continue or stop the run
-- Unregistered tools fall back to the default `ActionExecutor`
+- The descriptors in `customActionTools` are merged into the built-in tool
+  definitions sent on every model request. A descriptor named like a built-in
+  tool **overrides** that built-in definition (e.g. a stricter `done` schema);
+  the built-in set itself is never modified.
+- Dispatch is **custom-first**: when the model emits a tool call whose name is
+  registered in `customActions`, your `CustomActionHandler` executes it with
+  the raw arguments — the handler owns the argument shape, so the built-in
+  parser does not apply to it.
+- Unregistered names fall back to the built-in pipeline (the default
+  `ActionExecutor`).
+- Return `ActionResult.success()` or `ActionResult.failure()` to continue or
+  stop the run.
+
+### Terminal semantics (`done` / `fail`)
+
+When you register a handler under the name `done` or `fail`, it is consulted
+before the run ends:
+
+- `done` completes the run **only when the handler reports success** — this is
+  how an app verifies the goal against fresh state before accepting completion.
+  A failure with `recoverable: true` feeds the result back to the model and
+  the loop continues; a non-recoverable failure ends the run with the
+  handler's message.
+- `fail` ends the run with the handler's message.
 
 ---
 
@@ -1044,6 +1093,7 @@ New optional fields in `CopilotConfig`:
 | `memoryStore` | `MemoryStore?` | `null` | Multi-turn conversation memory |
 | `memoryContextLimit` | `int` | `10` | Max memory entries loaded as context |
 | `customActions` | `Map<String, CustomActionHandler>` | `{}` | Custom action handlers |
+| `customActionTools` | `List<LlmTool>` | `[]` | Custom tool descriptors merged into the LLM tool list (custom-first dispatch) |
 | `metricsCollector` | `MetricsCollector?` | `null` | Usage metrics collection |
 | `enableScreenshots` | `bool` | `false` | Optional screenshot fallback |
 | `screenshotAsFallback` | `bool` | `true` | Only screenshot when semantics insufficient |

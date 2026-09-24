@@ -1,6 +1,7 @@
 import 'actions/custom_action_handler.dart';
 import 'analytics/metrics_collector.dart';
 import 'llm/llm_adapter.dart';
+import 'llm/llm_tool.dart';
 import 'logging/copilot_event.dart';
 import 'memory/memory_store.dart';
 import 'retry/retry_config.dart';
@@ -93,12 +94,14 @@ class CopilotConfig {
     this.debugLogging = false,
     this.metricsCollector,
     Map<String, CustomActionHandler>? customActions,
+    List<LlmTool>? customActionTools,
     this.enableScreenshots = false,
     this.screenshotAsFallback = true,
     this.memoryStore,
     this.memoryContextLimit = 10,
   })  : safetyPolicy = safetyPolicy ?? CopilotSafetyPolicy.defaults,
-        customActions = customActions ?? const <String, CustomActionHandler>{};
+        customActions = customActions ?? const <String, CustomActionHandler>{},
+        customActionTools = customActionTools ?? const <LlmTool>[];
 
   /// Model adapter used to plan UI actions.
   final LlmAdapter llm;
@@ -145,6 +148,24 @@ class CopilotConfig {
   /// the corresponding [CustomActionHandler] executes instead of the default
   /// [ActionExecutor].
   final Map<String, CustomActionHandler> customActions;
+
+  /// Action descriptors merged into the LLM tool definitions.
+  ///
+  /// The custom-action-registry hook: the app supplies the [LlmTool]
+  /// descriptors of its registered [customActions] here, and they are
+  /// appended to the built-in tool definitions on every model request —
+  /// so the model knows the app's tools without forking the built-in
+  /// action vocabulary. A descriptor with the same name as a built-in
+  /// tool overrides that built-in definition (e.g. a stricter `done`
+  /// schema), while the built-in set itself is never modified.
+  ///
+  /// Dispatch is custom-first: a tool call whose name is in [customActions]
+  /// runs through that handler; unknown names fall through to the built-in
+  /// pipeline. For the terminal names `done`/`fail`, a registered handler is
+  /// consulted before the run ends: `done` completes the run only when the
+  /// handler reports success (the app verified the goal), and `fail` ends
+  /// the run with the handler's message.
+  final List<LlmTool> customActionTools;
 
   /// Whether screenshot capture is enabled.
   ///

@@ -1,3 +1,11 @@
+## 0.13.0
+
+- Added `CopilotConfig.customActionTools` — custom tool descriptors merged into the LLM tool definitions. Without this, registered `customActions` were invisible to the model, which only ever saw the 18 built-in tools.
+- Custom-first dispatch: a tool call whose name is registered in `customActions` now runs through the handler with its raw arguments in every execution path (including batched calls); the handler owns the argument shape, so non-built-in-shaped arguments no longer abort the run as "invalid tool call".
+- Terminal semantics for registered `done`/`fail` handlers: `done` completes the run only when the handler reports success (a `recoverable: true` failure feeds back to the model and the loop continues); `fail` ends the run with the handler's message.
+- A custom descriptor named like a built-in tool overrides that built-in definition; the built-in set itself is never modified.
+- Fixed a double-execution bug: the second execution pass re-ran tool calls that a registered handler had already executed (a custom tool could run twice per response). The pass now skips every call whose name has a registered handler.
+
 ## 0.12.0
 
 - Added retry/recovery engine with configurable exponential backoff for transient LLM failures.
